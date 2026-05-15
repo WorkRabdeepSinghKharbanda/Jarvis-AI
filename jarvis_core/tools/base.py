@@ -18,14 +18,12 @@ class Tool:
     input_schema: dict
     handler: Callable[..., Any]
 
-    def openai_spec(self) -> dict:
+    def gemini_spec(self) -> dict:
+        """Function declaration in Gemini's tool format."""
         return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": self.input_schema,
-            },
+            "name": self.name,
+            "description": self.description,
+            "parameters": self.input_schema,
         }
 
     def call(self, **kwargs) -> str:

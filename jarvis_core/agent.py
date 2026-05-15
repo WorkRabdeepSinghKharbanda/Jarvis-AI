@@ -1,14 +1,14 @@
-"""OpenAI function-calling loop — the brain of Jarvis.
+"""Gemini function-calling loop — the brain of Jarvis.
 
-Receives a user transcript, asks GPT which tool to call (if any),
-runs it locally, feeds the result back, and loops until GPT produces
+Receives a user transcript, asks Gemini which tool to call (if any),
+runs it locally, feeds the result back, and loops until Gemini produces
 a final natural-language reply.
 """
-import json
-from typing import List, Dict, Any
-from openai import OpenAI
-from .config import OPENAI_API_KEY, OPENAI_MODEL
-from .tools import ALL_TOOLS, TOOLS_BY_NAME, openai_specs
+from typing import List
+from google import genai
+from google.genai import types
+from .config import GOOGLE_API_KEY, GEMINI_MODEL
+from .tools import ALL_TOOLS, TOOLS_BY_NAME, gemini_specs
 
 _SYSTEM_PROMPT = (
     "You are Jarvis, a concise voice assistant. "
@@ -21,92 +21,95 @@ _SYSTEM_PROMPT = (
 )
 
 
+def _build_tool_config() -> types.Tool:
+    """Wrap all tool declarations into a single Gemini Tool object."""
+    return types.Tool(function_declarations=gemini_specs())
+
+
 class Agent:
     """Stateless dispatcher: one .handle() per user utterance.
 
-    Pass remember=True to keep multi-turn context across calls (stored in
-    self.history). Reset with self.history.clear().
+    Pass remember=True to keep multi-turn context across calls
+    (stored in self.history). Reset with self.history.clear().
     """
 
-    def __init__(self, model: str = OPENAI_MODEL):
-        if not OPENAI_API_KEY:
+    def __init__(self, model: str = GEMINI_MODEL):
+        if not GOOGLE_API_KEY:
             raise RuntimeError(
-                "OPENAI_API_KEY not set. Add it to .env or export it."
+                "GOOGLE_API_KEY not set. Add it to .env or export it."
             )
-        self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.client = genai.Client(api_key=GOOGLE_API_KEY)
         self.model = model
-        self.tools_spec = openai_specs()
-        self.history: List[Dict[str, Any]] = []
+        self.tools = [_build_tool_config()]
+        self.config = types.GenerateContentConfig(
+            system_instruction=_SYSTEM_PROMPT,
+            tools=self.tools,
+        )
+        self.history: List[types.Content] = []
+
+    def _to_content(self, role: str, parts: list) -> types.Content:
+        return types.Content(role=role, parts=parts)
 
     def handle(self, user_text: str, *, remember: bool = False) -> str:
-        """Send user_text to GPT; execute tool calls; return final reply."""
+        """Send user_text to Gemini; execute tool calls; return final reply."""
+        user_part = types.Part.from_text(text=user_text)
         if remember:
-            self.history.append({"role": "user", "content": user_text})
-            messages: List[Dict[str, Any]] = [
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                *self.history,
-            ]
+            self.history.append(self._to_content("user", [user_part]))
+            contents: List[types.Content] = list(self.history)
         else:
-            messages = [
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": user_text},
-            ]
+            contents = [self._to_content("user", [user_part])]
 
         final_text = ""
         # Cap loop iterations to prevent runaway tool chains
         for _ in range(8):
-            resp = self.client.chat.completions.create(
+            resp = self.client.models.generate_content(
                 model=self.model,
-                messages=messages,
-                tools=self.tools_spec,
-                tool_choice="auto",
+                contents=contents,
+                config=self.config,
             )
-            msg = resp.choices[0].message
-            final_text = (msg.content or "").strip() or final_text
 
-            if not msg.tool_calls:
+            candidate = resp.candidates[0] if resp.candidates else None
+            if not candidate or not candidate.content:
                 break
 
-            # Append the assistant turn (must include tool_calls)
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": msg.content,
-                    "tool_calls": [
-                        {
-                            "id": tc.id,
-                            "type": "function",
-                            "function": {
-                                "name": tc.function.name,
-                                "arguments": tc.function.arguments,
-                            },
-                        }
-                        for tc in msg.tool_calls
-                    ],
-                }
-            )
+            # Append assistant turn (Gemini calls it "model")
+            contents.append(candidate.content)
 
-            # Execute each tool and append a tool result message per call
-            for tc in msg.tool_calls:
-                tool = TOOLS_BY_NAME.get(tc.function.name)
-                try:
-                    args = json.loads(tc.function.arguments or "{}")
-                except json.JSONDecodeError:
-                    args = {}
+            # Gather text + function_calls from the model's parts
+            tool_calls = []
+            text_chunks = []
+            for part in candidate.content.parts or []:
+                if getattr(part, "function_call", None):
+                    tool_calls.append(part.function_call)
+                elif getattr(part, "text", None):
+                    text_chunks.append(part.text)
+            if text_chunks:
+                final_text = "".join(text_chunks).strip() or final_text
+
+            if not tool_calls:
+                break
+
+            # Execute every requested tool and feed results back
+            result_parts = []
+            for fc in tool_calls:
+                tool = TOOLS_BY_NAME.get(fc.name)
+                args = dict(fc.args) if fc.args else {}
                 if tool is None:
-                    result = f"Unknown tool: {tc.function.name}"
+                    result = f"Unknown tool: {fc.name}"
                 else:
                     result = tool.call(**args)
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": result,
-                    }
+                result_parts.append(
+                    types.Part.from_function_response(
+                        name=fc.name,
+                        response={"result": result},
+                    )
                 )
+            contents.append(self._to_content("user", result_parts))
 
         if remember:
-            self.history.append({"role": "assistant", "content": final_text})
+            self.history.append(
+                self._to_content("model", [types.Part.from_text(text=final_text)])
+            )
         return final_text or "Done."
 
 

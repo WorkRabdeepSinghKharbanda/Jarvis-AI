@@ -21,9 +21,9 @@ PROJECTS_DIR = os.environ.get("JARVIS_PROJECTS_DIR", str(REPO_ROOT.parent))
 EMAIL_USER = os.environ.get("JARVIS_EMAIL_USER")
 EMAIL_PASS = os.environ.get("JARVIS_EMAIL_PASS")
 
-# OpenAI
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-OPENAI_MODEL = os.environ.get("JARVIS_OPENAI_MODEL", "gpt-4o-mini")
+# Google Gemini
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+GEMINI_MODEL = os.environ.get("JARVIS_GEMINI_MODEL", "gemini-2.0-flash")
 
 # Platform
 OS_NAME = platform.system()
