@@ -1,0 +1,11 @@
+pyttsx3
+SpeechRecognition
+wikipedia
+pywhatkit
+pyjokes
+plyer
+requests
+pyaudio
+opencv-python
+beautifulsoup4
+lyricsgenius

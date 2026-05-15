@@ -46,12 +46,10 @@ python3 -m pip install --upgrade pip
 
 echo
 echo "==> Installing Jarvis-AI Python dependencies"
-python3 -m pip install -e .
-
-# Windows extras
 if [[ "$OS" =~ ^(MINGW|MSYS|CYGWIN) ]]; then
-    echo "==> Installing Windows-only extras"
-    python3 -m pip install -e ".[windows]"
+    python3 -m pip install -r requirements-windows.txt
+else
+    python3 -m pip install -r requirements.txt
 fi
 
 # 3. Env-var hint

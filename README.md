@@ -46,11 +46,11 @@ cd Jarvis-AI
 ### Manual install (alternative)
 
 ```bash
-python3 -m pip install -e .
+python3 -m pip install -r requirements.txt
 python3 jarvis.py
 ```
 
-> On Windows, also install the Windows-only extras: `python3 -m pip install -e ".[windows]"`
+> On Windows: `python3 -m pip install -r requirements-windows.txt`
 
 ### Configure email credentials
 
