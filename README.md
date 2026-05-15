@@ -1,33 +1,57 @@
 # Jarvis-AI
-Jarvis is a virtual assistant application that you can use to complete your tasks with your voice command
 
-***
+A Python-based voice-activated virtual assistant inspired by Iron Man's J.A.R.V.I.S. Executes a wide range of desktop and web tasks via natural-language voice commands.
 
-<h3> Functionalities</h3>
-<ol>
-    <p>In Jarvis AI :</p> 
-    <li>you can search for any Wikipedia page</li>
-    <li>opening a website with command(like open youtube, LinkedIn)</li> 
-    <li>play random music/movies stored in the system </li>
-    <li>Open programs(like VS code,Notepad etc)</li> 
-    <li>play any video on youtube</li>
-    <li>send an email</li>
-    <li>crack a joke</li> 
-    <li>tell current day and time</li> 
-    <li>Tells about covid cases in any state of India</li>
-    <li>open secure vision system which can be used as a security camera to detect thief (other project)</li>
-    <li>open custom web browser (other project)</li>
-    <li>open face detection module which is made by ML algorithm to detect human faces (other project)</li>
-    <li>tell quote of the day.
-    <li>tells weather of any city</li>
-</ol>
+## Features
 
-***
+- Search any topic on Wikipedia
+- Open popular websites (YouTube, LinkedIn, etc.) by voice
+- Play random music / movies from local storage
+- Launch installed programs (VS Code, Notepad, etc.)
+- Play YouTube videos on demand
+- Compose and send emails
+- Tell jokes, current day, and time
+- Live COVID-19 statistics for any Indian state
+- Daily quote of the day
+- Real-time weather for any city
+- Launch sibling projects: Secure-Vision, Customer-Browser, Face-Detector
 
-<h3>Technology Used : </h3>
-<ol>
-    <li>Python</li>
-    <li>OpenCV</li>
-    <li>MachineLearning</li>
-    <li>API’s</li>
-</ol>
+## Tech Stack
+
+- **Language:** Python 3
+- **Voice I/O:** `pyttsx3`, `speech_recognition`
+- **Web / APIs:** `wikipedia`, `requests`, weather + quote APIs
+- **Automation:** `pywhatkit`, `webbrowser`, `os`, `smtplib`
+- **ML / CV:** OpenCV (for vision sub-modules)
+
+## Project Structure
+
+```
+Jarvis-AI/
+├── jarvis.py     # Main assistant script
+└── weather.ico   # App icon
+```
+
+## Setup
+
+```bash
+git clone https://github.com/WorkRabdeepSinghKharbanda/Jarvis-AI.git
+cd Jarvis-AI
+pip install pyttsx3 SpeechRecognition wikipedia pywhatkit requests pyaudio opencv-python
+python jarvis.py
+```
+
+> **macOS / Linux note:** `pyaudio` may require `portaudio` (e.g. `brew install portaudio`).
+
+## Usage
+
+Run the script and speak commands such as:
+- *"Open YouTube"*
+- *"Play a song"*
+- *"Tell me a joke"*
+- *"What's the weather in Delhi"*
+- *"Search Wikipedia for Albert Einstein"*
+
+## License
+
+MIT
