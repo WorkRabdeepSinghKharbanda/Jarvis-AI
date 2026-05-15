@@ -19,6 +19,34 @@ import bs4
 import os #changing directory , and executing script
 import time # for sleep
 import platform # detect OS for TTS driver selection
+import subprocess # cross-platform file/app launching
+from pathlib import Path
+
+# cross-platform path config — override via env vars
+HOME = Path.home()
+MUSIC_DIR = os.environ.get('JARVIS_MUSIC_DIR', str(HOME / 'Music'))
+MOVIE_DIR = os.environ.get('JARVIS_MOVIE_DIR', str(HOME / 'Movies'))
+PROJECTS_DIR = os.environ.get('JARVIS_PROJECTS_DIR', str(Path(__file__).resolve().parent.parent))
+
+def open_path(path):
+    """Open a file/dir/app with the system default handler."""
+    system = platform.system()
+    if system == 'Darwin':
+        subprocess.Popen(['open', path])
+    elif system == 'Windows':
+        os.startfile(path)
+    else:
+        subprocess.Popen(['xdg-open', path])
+
+def open_app(name):
+    """Launch an application by name across platforms."""
+    system = platform.system()
+    if system == 'Darwin':
+        subprocess.Popen(['open', '-a', name])
+    elif system == 'Windows':
+        os.startfile(name)
+    else:
+        subprocess.Popen([name.lower()])
 
 # cross-platform TTS driver: sapi5 (Windows), nsss (macOS), espeak (Linux)
 _tts_driver = {'Windows': 'sapi5', 'Darwin': 'nsss', 'Linux': 'espeak'}.get(platform.system())
@@ -90,16 +118,20 @@ def takeCommand():
 
 def sendEmail(to,content):
     '''
-    TO send mail
+    Send mail. Credentials loaded from env vars:
+      JARVIS_EMAIL_USER  — Gmail address
+      JARVIS_EMAIL_PASS  — Gmail App Password (NOT account password)
     '''
-    server=smtplib.SMTP('smtp.gmail.com',587)
+    sender = os.environ.get('JARVIS_EMAIL_USER')
+    password = os.environ.get('JARVIS_EMAIL_PASS')
+    if not sender or not password:
+        raise RuntimeError('Set JARVIS_EMAIL_USER and JARVIS_EMAIL_PASS environment variables')
+    server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
     server.starttls()
-    # mail,password(sender side)
-    server.login('omjain1290@gmail.com','omjain1290')
-    # sender , reciever ,content
-    server.sendmail('omjain1290@gmail.com',to,content)
-    server.close
+    server.login(sender, password)
+    server.sendmail(sender, to, content)
+    server.close()
 
 # request , notification
 def getData(url):
@@ -257,37 +289,32 @@ if __name__ == '__main__':
             elif 'open whatsapp' in query:
                 webbrowser.open('whatsapp.com')
        
-            #play random music/movies    
+            #play random music/movies
             elif 'play random music' in query or 'random music' in query:
-                music_dir='C:\\Users\\sarry\\Music\\Playlists\\music'
-                # double slash (\\) is using to escape from character
-                songs=os.listdir(music_dir)
-                # print(songs)
-                b=[]
-                for i in range(len(songs)):
-                    b.append(i)
-                    
-                no=random.choice(b)
-                str=songs[no].replace('.mp3','')
-
-                speak(f'Playing song {str}!')
-                os.startfile(os.path.join(music_dir, songs[no]))
-                # open file open path join and add music_dir and play songs[index]
+                music_dir = MUSIC_DIR
+                try:
+                    songs = [s for s in os.listdir(music_dir) if not s.startswith('.')]
+                    if not songs:
+                        speak(f'No music found in {music_dir}')
+                    else:
+                        choice = random.choice(songs)
+                        speak(f'Playing song {os.path.splitext(choice)[0]}!')
+                        open_path(os.path.join(music_dir, choice))
+                except FileNotFoundError:
+                    speak(f'Music folder not found: {music_dir}')
 
             elif 'play random movie' in query or 'random movie' in query:
-                movie_dir='C:\\Film'
-                # double slash (\\) is using to escape from character
-                movies=os.listdir(movie_dir)
-                # print(songs)
-        
-                b=[]
-                for i in range(len(movies)):
-                    b.append(i)
-
-                no=random.choice(b)
-                speak(f'Playing movie {movies[no]}!')
-                os.startfile(os.path.join(movie_dir, movies[no]))
-                # open file open path join and add movie_dir and play movies[index]
+                movie_dir = MOVIE_DIR
+                try:
+                    movies = [m for m in os.listdir(movie_dir) if not m.startswith('.')]
+                    if not movies:
+                        speak(f'No movies found in {movie_dir}')
+                    else:
+                        choice = random.choice(movies)
+                        speak(f'Playing movie {choice}!')
+                        open_path(os.path.join(movie_dir, choice))
+                except FileNotFoundError:
+                    speak(f'Movie folder not found: {movie_dir}')
 
 
             # time
@@ -297,20 +324,16 @@ if __name__ == '__main__':
 
             # open programs
             elif 'open code' in query:
-                codepath = "C:\\Users\\sarry\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
-                os.startfile(codepath)
-            
+                open_app('Visual Studio Code')
+
             elif 'open arduino'  in query or 'open audino' in query:
-                arpath = "C:\\Program Files (x86)\\Arduino\\arduino.exe"
-                os.startfile(arpath)
+                open_app('Arduino')
 
             elif 'open chrome' in query:
-                chromepath = "C:\\Program Files\\Google\\Chrome\\Application\\Chrome.exe"
-                os.startfile(chromepath)
-                
+                open_app('Google Chrome')
+
             elif 'open firefox' in query:
-                firepath = "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
-                os.startfile(firepath)
+                open_app('Firefox')
 
             # search in youtube
             elif 'on youtube' in query:
@@ -347,31 +370,28 @@ if __name__ == '__main__':
             #Secure Vision
             elif 'secure vision' in query or 'security vision' in query:
                 speak('Activating Secure Vision System')
-                os.chdir(r"C:\project\Secure Vision")
-                os.system('python secureVision.py')
-            
+                subprocess.Popen(['python3', 'secureVision.py'],
+                                 cwd=os.path.join(PROJECTS_DIR, 'Secure-Vision'))
+
             #Custom Browser
             elif 'custom browser' in query:
                 speak('Opening Custom Browser')
-                os.chdir(r"C:\project\CustomBrowser")
-                os.system('python cusBrowser.py')
+                subprocess.Popen(['python3', 'cusBrowser.py'],
+                                 cwd=os.path.join(PROJECTS_DIR, 'Customer-Browser'))
 
             # Face detection module
-            elif 'face recognization' in query or 'face detection' in query or 'phase' in query: 
+            elif 'face recognization' in query or 'face detection' in query or 'phase' in query:
                 speak('Opening Face Detection System')
-                os.chdir(r"C:\project\face detector")
-                os.system('python facedetector1.py')
+                subprocess.Popen(['python3', 'face_detection_in_images.py'],
+                                 cwd=os.path.join(PROJECTS_DIR, 'Face-Detector'))
 
-            # covid 19 portal 
-            elif 'covid portal' in query or 'portal' in query: 
+            # covid 19 portal
+            elif 'covid portal' in query or 'portal' in query:
                 speak('Opening ;COVID19 PORTAL')
-
-                url = 'http://127.0.0.1:5000/'
-                chrome = "C://Program Files//Google//Chrome//Application//chrome.exe %s"
-                webbrowser.get(chrome).open(url)
-                
-                os.chdir(r"C:\project\coronavirus")
-                os.system('python CovidDetectorSystem.py')
+                subprocess.Popen(['python3', 'CovidDetectorSystem.py'],
+                                 cwd=os.path.join(PROJECTS_DIR, 'Covid19-Portal'))
+                time.sleep(2)
+                webbrowser.open('http://127.0.0.1:5000/')
 
             # Quotes of the day
             elif 'quote of the day' in query:
@@ -460,7 +480,13 @@ if __name__ == '__main__':
             # system functionality
             elif 'shutdown' in query:
                 speak('Shutting Down the System')
-                os.system("shutdown /s /t 1")
+                system = platform.system()
+                if system == 'Windows':
+                    subprocess.run(['shutdown', '/s', '/t', '1'])
+                elif system == 'Darwin':
+                    subprocess.run(['osascript', '-e', 'tell app "System Events" to shut down'])
+                else:
+                    subprocess.run(['shutdown', '-h', 'now'])
 
             # exit  
             elif 'exit' in query or 'close' in query:
