@@ -37,8 +37,10 @@ Jarvis-AI/
 ```bash
 git clone https://github.com/WorkRabdeepSinghKharbanda/Jarvis-AI.git
 cd Jarvis-AI
-python3 -m pip install pyttsx3 SpeechRecognition wikipedia pywhatkit pyjokes plyer requests pyaudio opencv-python beautifulsoup4
+python3 -m pip install -e .
 ```
+
+> On Windows, also install the Windows-only extras: `python3 -m pip install -e ".[windows]"`
 
 ### Configure email credentials
 
