@@ -56,17 +56,22 @@ fi
 echo
 echo "==> Setup complete."
 echo
-if [[ -z "${JARVIS_EMAIL_USER:-}" || -z "${JARVIS_EMAIL_PASS:-}" ]]; then
+if [[ ! -f .env ]]; then
+    echo "==> Creating .env from .env.example"
+    cp .env.example .env
     cat <<'EOF'
-NOTE: email sending requires these environment variables:
-    export JARVIS_EMAIL_USER="you@gmail.com"
-    export JARVIS_EMAIL_PASS="<gmail-app-password>"
+
+NOTE: email sending requires real credentials in .env:
+    JARVIS_EMAIL_USER=you@gmail.com
+    JARVIS_EMAIL_PASS=<gmail-app-password>
 
 Generate a Gmail App Password at: https://myaccount.google.com/apppasswords
 (2FA must be enabled on the Google account.)
 
-Add the two exports to ~/.zshrc (macOS) or ~/.bashrc (Linux) to persist.
+Edit .env with your values before running ./run.sh
 EOF
+else
+    echo "==> .env already exists — leaving untouched"
 fi
 
 echo

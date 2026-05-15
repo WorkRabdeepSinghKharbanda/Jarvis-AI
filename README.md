@@ -54,14 +54,21 @@ python3 jarvis.py
 
 ### Configure email credentials
 
-Email sending uses environment variables. Generate a Gmail **App Password** at https://myaccount.google.com/apppasswords (2FA must be enabled), then export:
+Email sending reads credentials from a `.env` file in the repo root (gitignored, never committed).
 
 ```bash
-export JARVIS_EMAIL_USER="you@gmail.com"
-export JARVIS_EMAIL_PASS="<gmail-app-password>"
+cp .env.example .env
+# then edit .env and fill in real values
 ```
 
-Persist them by adding the two lines to `~/.zshrc` (macOS) or `~/.bashrc` (Linux).
+`.env` content:
+
+```
+JARVIS_EMAIL_USER=you@gmail.com
+JARVIS_EMAIL_PASS=your-gmail-app-password
+```
+
+Generate a Gmail **App Password** at https://myaccount.google.com/apppasswords (2FA must be enabled on the Google account). `jarvis.py` loads `.env` automatically via `python-dotenv` at startup. Shell-exported env vars still take precedence if both set.
 
 ### Run
 

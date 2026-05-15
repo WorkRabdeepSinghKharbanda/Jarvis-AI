@@ -3,6 +3,13 @@ import pyaudio
 import datetime
 import speech_recognition as sr
 
+# Load environment variables from .env if python-dotenv is installed
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # .env support optional; env vars from shell still work
+
 import wikipedia # opening wikipedia search
 import webbrowser #opening browser to open a link
 import os
