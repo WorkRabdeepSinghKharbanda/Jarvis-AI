@@ -64,7 +64,10 @@ if voices:
 # print(voices[0].id)
 
 def speak(audio):
-    # string audio is speak by engine 
+    # macOS: use native `say` (pyttsx3 nsss driver hangs after first runAndWait)
+    if platform.system() == 'Darwin':
+        subprocess.run(['say', str(audio)])
+        return
     engine.say(audio)
     engine.runAndWait()
 
