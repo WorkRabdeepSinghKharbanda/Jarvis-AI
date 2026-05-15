@@ -37,7 +37,7 @@ Jarvis-AI/
 ```bash
 git clone https://github.com/WorkRabdeepSinghKharbanda/Jarvis-AI.git
 cd Jarvis-AI
-pip install pyttsx3 SpeechRecognition wikipedia pywhatkit requests pyaudio opencv-python
+python3 -m pip install pyttsx3 SpeechRecognition wikipedia pywhatkit requests pyaudio opencv-python
 python jarvis.py
 ```
 
