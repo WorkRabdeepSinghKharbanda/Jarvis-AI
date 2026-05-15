@@ -34,10 +34,20 @@ Jarvis-AI/
 
 ## Setup
 
+### Quick start (recommended)
+
 ```bash
 git clone https://github.com/WorkRabdeepSinghKharbanda/Jarvis-AI.git
 cd Jarvis-AI
+./setup.sh   # installs portaudio (macOS/Linux) + all Python deps
+./run.sh     # launches Jarvis
+```
+
+### Manual install (alternative)
+
+```bash
 python3 -m pip install -e .
+python3 jarvis.py
 ```
 
 > On Windows, also install the Windows-only extras: `python3 -m pip install -e ".[windows]"`
