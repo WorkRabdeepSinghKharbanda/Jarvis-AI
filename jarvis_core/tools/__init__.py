@@ -20,6 +20,6 @@ for module_info in pkgutil.iter_modules(__path__):
 TOOLS_BY_NAME: dict[str, Tool] = {t.name: t for t in ALL_TOOLS}
 
 
-def anthropic_specs() -> list[dict]:
-    """Return the tool specs in the shape the Anthropic API expects."""
-    return [t.anthropic_spec() for t in ALL_TOOLS]
+def openai_specs() -> list[dict]:
+    """Return the tool specs in the shape the OpenAI API expects."""
+    return [t.openai_spec() for t in ALL_TOOLS]

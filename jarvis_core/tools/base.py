@@ -18,11 +18,14 @@ class Tool:
     input_schema: dict
     handler: Callable[..., Any]
 
-    def anthropic_spec(self) -> dict:
+    def openai_spec(self) -> dict:
         return {
-            "name": self.name,
-            "description": self.description,
-            "input_schema": self.input_schema,
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": self.input_schema,
+            },
         }
 
     def call(self, **kwargs) -> str:

@@ -21,9 +21,9 @@ PROJECTS_DIR = os.environ.get("JARVIS_PROJECTS_DIR", str(REPO_ROOT.parent))
 EMAIL_USER = os.environ.get("JARVIS_EMAIL_USER")
 EMAIL_PASS = os.environ.get("JARVIS_EMAIL_PASS")
 
-# Claude
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-CLAUDE_MODEL = os.environ.get("JARVIS_CLAUDE_MODEL", "claude-haiku-4-5")
+# OpenAI
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_MODEL = os.environ.get("JARVIS_OPENAI_MODEL", "gpt-4o-mini")
 
 # Platform
 OS_NAME = platform.system()
