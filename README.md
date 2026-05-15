@@ -37,11 +37,20 @@ Jarvis-AI/
 ```bash
 git clone https://github.com/WorkRabdeepSinghKharbanda/Jarvis-AI.git
 cd Jarvis-AI
-python3 -m pip install pyttsx3 SpeechRecognition wikipedia pywhatkit requests pyaudio opencv-python
-python jarvis.py
+python3 -m pip install pyttsx3 SpeechRecognition wikipedia pywhatkit pyjokes plyer requests pyaudio opencv-python beautifulsoup4
+python3 jarvis.py
 ```
 
-> **macOS / Linux note:** `pyaudio` may require `portaudio` (e.g. `brew install portaudio`).
+> **Platform notes:**
+> - **macOS / Linux:** `pyaudio` requires `portaudio` (`brew install portaudio` on macOS; `sudo apt install portaudio19-dev` on Debian/Ubuntu).
+> - **Text-to-speech driver:** `pyttsx3.init('sapi5')` (line 23 in `jarvis.py`) only works on Windows. On macOS use `nsss`, on Linux use `espeak`. Cross-platform fix:
+>   ```python
+>   import platform
+>   driver = {'Windows': 'sapi5', 'Darwin': 'nsss', 'Linux': 'espeak'}[platform.system()]
+>   engine = pyttsx3.init(driver)
+>   ```
+> - **Notification icons:** `jarvis.py` lines 110 and 195 hardcode `C:\project\jarvisAI\*.ico`. Replace with relative paths (e.g. `weather.ico`) for non-Windows use.
+> - **Windows only:** `pyttsx3` on Windows additionally needs `python3 -m pip install comtypes pypiwin32`.
 
 ## Usage
 
