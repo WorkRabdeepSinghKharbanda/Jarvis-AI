@@ -18,18 +18,21 @@ import bs4
 
 import os #changing directory , and executing script
 import time # for sleep
+import platform # detect OS for TTS driver selection
 
-# windows api for gathering voices
-engine = pyttsx3.init('sapi5')
+# cross-platform TTS driver: sapi5 (Windows), nsss (macOS), espeak (Linux)
+_tts_driver = {'Windows': 'sapi5', 'Darwin': 'nsss', 'Linux': 'espeak'}.get(platform.system())
+engine = pyttsx3.init(_tts_driver) if _tts_driver else pyttsx3.init()
 # lower down jarvis voice
 newVoiceRate = 175
 engine.setProperty('rate',newVoiceRate)
 
 voices = engine.getProperty('voices')
 # 2 voices male or female
-# print(voices) 
+# print(voices)
 # 0 for daniel and 1 for zira
-engine.setProperty('voice',voices[0].id)
+if voices:
+    engine.setProperty('voice', voices[0].id)
 # print(voices[0].id)
 
 def speak(audio):
@@ -107,7 +110,6 @@ def notifyMe(title , message):
     notification.notify(
         title=title , 
         message = message,
-        app_icon = 'C:\project\jarvisAI\covid.ico' ,
         timeout = 40
         )
 
@@ -192,7 +194,6 @@ def weatherNotifyMe(title , message):
     notification.notify(
         title=title , 
         message = message,
-        app_icon = 'C:\project\jarvisAI\weather.ico' ,
         timeout = 40
         )
 
